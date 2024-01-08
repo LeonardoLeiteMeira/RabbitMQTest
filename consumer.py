@@ -1,4 +1,11 @@
 import pika
+import asyncio
+import json
+
+async def minha_funcao_assincrona():
+    await asyncio.sleep(2) 
+    print("Tarefa assíncrona completada",flush=True)
+
 
 class RabbitmqConsumer:
     def __init__(self, queue_name, callback) -> None:
@@ -39,12 +46,19 @@ class RabbitmqConsumer:
 
 def minha_callback(ch, method, properties, body):
     print("\n++++++++Receives data from RabbitMQ++++++++")
-    print("Channel: ",ch)
-    print("Method: ",method)
-    print("Properties: ",properties)
-    print("Body: ",body)
+    # print("Channel: ",ch)
+    # print("Method: ",method)
+    # print("Properties: ",properties)
+    data_str = body.decode('utf-8')
+    data_dict = json.loads(data_str)
+    print("Body: ",data_dict["value"])
     print("\n++++++++++++++++")
+    asyncio.create_task(minha_funcao_assincrona())
 
 
-rabitmq_consumer = RabbitmqConsumer("fila1",minha_callback)
-rabitmq_consumer.start()
+
+async def main():
+    rabitmq_consumer = RabbitmqConsumer("fila1",minha_callback)
+    rabitmq_consumer.start()
+
+asyncio.run(main())
